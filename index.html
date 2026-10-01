@@ -2,39 +2,726 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>TV Remote</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart TV Remote Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0b0b0e;
+            color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            overflow-x: hidden;
+            touch-action: pan-y;
+        }
 
-    <div class="remote-container">
-        <h2>Пульт ТВ</h2>
-        
-        <!-- Поле для ввода IP-адреса телевизора -->
-        <div class="settings">
-            <input type="text" id="tv-ip" placeholder="IP телевизора (например, 192.168.1.50)">
-            <button onclick="saveIp()" class="save-btn">Сохранить IP</button>
+        .remote-shell {
+            background: linear-gradient(145deg, #18191d, #111215);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            border-radius: 40px;
+            border: 2px solid #2a2b30;
+        }
+
+        /* Glassmorphism modal & header */
+        .glass-panel {
+            background: rgba(24, 25, 29, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* Press animation for SVG buttons */
+        .btn-interact {
+            cursor: pointer;
+            transition: transform 0.08s ease, filter 0.08s ease;
+        }
+        .btn-interact:active {
+            transform: scale(0.92);
+            filter: brightness(1.2);
+        }
+
+        /* Carousel sliding container */
+        .remotes-track {
+            display: flex;
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+            width: 200%;
+        }
+        .remote-slide {
+            width: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        /* Custom scrollbar for modals */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between select-none">
+
+    <header class="w-full px-5 py-4 flex items-center justify-between z-30 glass-panel sticky top-0 border-b border-zinc-800/50">
+        <!-- Add Device Button -->
+        <button onclick="openModal()" class="flex items-center justify-center w-11 h-11 rounded-full bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition border border-zinc-700 text-orange-400 shadow-md">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+            </svg>
+        </button>
+
+        <!-- Current Device Indicator Pill (Oval) -->
+        <div onclick="openDeviceSelector()" id="currentDevicePill" class="cursor-pointer px-5 py-2 rounded-full bg-zinc-900 border border-zinc-700/80 shadow-inner flex items-center space-x-2 max-w-[200px] sm:max-w-xs truncate">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse flex-shrink-0" id="deviceStatusDot"></span>
+            <span id="currentDeviceName" class="text-xs sm:text-sm font-medium tracking-wide truncate text-zinc-200">Нет устройств</span>
         </div>
 
-        <!-- Кнопки пульта -->
-        <div class="remote">
-            <button class="power" onclick="sendKey('power')">POWER</button>
-            
-            <button onclick="sendKey('vol_up')">VOL +</button>
-            <button onclick="sendKey('mute')">MUTE</button>
-            <button onclick="sendKey('ch_up')">CH +</button>
-            
-            <button onclick="sendKey('vol_down')">VOL -</button>
-            <button onclick="sendKey('home')">HOME</button>
-            <button onclick="sendKey('ch_down')">CH -</button>
-            
-            <button onclick="sendKey('left')">◀</button>
-            <button onclick="sendKey('ok')">OK</button>
-            <button onclick="sendKey('right')">▶</button>
+        <!-- Quick Switcher Dots / Icon -->
+        <div class="flex items-center space-x-1">
+            <button onclick="switchRemote(0)" id="dotBtn1" class="w-3 h-3 rounded-full bg-orange-500 transition"></button>
+            <button onclick="switchRemote(1)" id="dotBtn2" class="w-3 h-3 rounded-full bg-zinc-700 transition"></button>
+        </div>
+    </header>
+
+    <main class="flex-1 flex flex-col items-center justify-center px-4 py-6 relative overflow-hidden" id="swipeArea">
+        <div class="w-full max-w-sm overflow-hidden">
+            <div id="remotesTrack" class="remotes-track">
+                
+                <!-- REMOTE 1: Samsung Classic Keypad Remote -->
+                <div class="remote-slide">
+                    <div class="remote-shell p-4 w-[310px] flex flex-col items-center relative select-none">
+                        <svg viewBox="0 0 320 720" class="w-full h-auto drop-shadow-2xl">
+                            <!-- Definitions & Gradients -->
+                            <defs>
+                                <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#22242a"/>
+                                    <stop offset="50%" stop-color="#141518"/>
+                                    <stop offset="100%" stop-color="#0d0e11"/>
+                                </linearGradient>
+                                <linearGradient id="btnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#2a2c33"/>
+                                    <stop offset="100%" stop-color="#191a1f"/>
+                                </linearGradient>
+                                <linearGradient id="redBtnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#e53935"/>
+                                    <stop offset="100%" stop-color="#b71c1c"/>
+                                </linearGradient>
+                            </defs>
+
+                            <!-- Remote Outer Body Shape -->
+                            <rect x="10" y="10" width="300" height="700" rx="35" fill="url(#bodyGrad)" stroke="#3a3d46" stroke-width="2"/>
+                            
+                            <!-- Infrared LED window at top -->
+                            <rect x="140" y="16" width="40" height="8" rx="4" fill="#050505" stroke="#222" stroke-width="1"/>
+
+                            <!-- ROW 1: Power & Source -->
+                            <!-- Power Button (Red) -->
+                            <g class="btn-interact" onclick="sendKey('power', 'Samsung Classic')">
+                                <rect x="35" y="38" width="55" height="42" rx="10" fill="url(#redBtnGrad)" stroke="#990000" stroke-width="1"/>
+                                <path d="M62.5 50v12M56 54.5a8 8 0 1 0 13 0" stroke="#fff" stroke-width="3" stroke-linecap="round" fill="none"/>
+                            </g>
+                            <!-- Source Button -->
+                            <g class="btn-interact" onclick="sendKey('source', 'Samsung Classic')">
+                                <rect x="220" y="38" width="65" height="42" rx="10" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="252.5" y="57" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">SOURCE</text>
+                                <path d="M246 62h13m-6.5-4v5" stroke="#bbb" stroke-width="1.5" stroke-linecap="round"/>
+                            </g>
+
+                            <!-- ROWS 2-4: Numeric Keypad (1-9, TTX, 0, PRE-CH) -->
+                            <!-- 1 -->
+                            <g class="btn-interact" onclick="sendKey('1', 'Samsung Classic')">
+                                <rect x="35" y="95" width="72" height="42" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="71" y="122" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">1</text>
+                            </g>
+                            <!-- 2 -->
+                            <g class="btn-interact" onclick="sendKey('2', 'Samsung Classic')">
+                                <rect x="124" y="95" width="72" height="42" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="160" y="122" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">2</text>
+                            </g>
+                            <!-- 3 -->
+                            <g class="btn-interact" onclick="sendKey('3', 'Samsung Classic')">
+                                <rect x="213" y="95" width="72" height="42" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="249" y="122" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">3</text>
+                            </g>
+
+                            <!-- 4 -->
+                            <g class="btn-interact" onclick="sendKey('4', 'Samsung Classic')">
+                                <rect x="35" y="145" width="72" height="42" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="71" y="172" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">4</text>
+                            </g>
+                            <!-- 5 -->
+                            <g class="btn-interact" onclick="sendKey('5', 'Samsung Classic')">
+                                <rect x="124" y="145" width="72" height="42" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="160" y="172" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">5</text>
+                            </g>
+                            <!-- 6 -->
+                            <g class="btn-interact" onclick="sendKey('6', 'Samsung Classic')">
+                                <rect x="213" y="145" width="72" height="42" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="249" y="172" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">6</text>
+                            </g>
+
+                            <!-- 7 -->
+                            <g class="btn-interact" onclick="sendKey('7', 'Samsung Classic')">
+                                <rect x="35" y="195" width="72" height="42" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="71" y="222" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">7</text>
+                            </g>
+                            <!-- 8 -->
+                            <g class="btn-interact" onclick="sendKey('8', 'Samsung Classic')">
+                                <rect x="124" y="195" width="72" height="42" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="160" y="222" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">8</text>
+                            </g>
+                            <!-- 9 -->
+                            <g class="btn-interact" onclick="sendKey('9', 'Samsung Classic')">
+                                <rect x="213" y="195" width="72" height="42" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="249" y="222" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">9</text>
+                            </g>
+
+                            <!-- TTX/MIX, 0, PRE-CH -->
+                            <g class="btn-interact" onclick="sendKey('ttx', 'Samsung Classic')">
+                                <rect x="35" y="245" width="72" height="38" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="71" y="268" fill="#aaa" font-size="9" font-weight="bold" text-anchor="middle">TTX/MIX</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('0', 'Samsung Classic')">
+                                <rect x="124" y="245" width="72" height="38" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="160" y="272" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">0</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('pre_ch', 'Samsung Classic')">
+                                <rect x="213" y="245" width="72" height="38" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="249" y="262" fill="#aaa" font-size="9" font-weight="bold" text-anchor="middle">PRE-CH</text>
+                            </g>
+
+                            <!-- ROW: Volume & Channel Rockers + Mute -->
+                            <!-- VOL Rocker -->
+                            <g class="btn-interact" onclick="sendKey('vol_up', 'Samsung Classic')">
+                                <path d="M35 295 h50 a8 8 0 0 1 8 8 v32 h-58 z" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="60" y="321" fill="#fff" font-size="22" font-weight="bold" text-anchor="middle">+</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('vol_down', 'Samsung Classic')">
+                                <path d="M35 340 h58 v32 a8 8 0 0 1 -8 8 h-50 z" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="60" y="366" fill="#fff" font-size="24" font-weight="bold" text-anchor="middle">-</text>
+                            </g>
+
+                            <!-- MUTE & CH LIST in middle -->
+                            <g class="btn-interact" onclick="sendKey('mute', 'Samsung Classic')">
+                                <rect x="101" y="295" width="118" height="38" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="160" y="313" fill="#fff" font-size="10" font-weight="bold" text-anchor="middle">MUTE</text>
+                                <path d="M150 321l4-4m0 4l-4-4" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('ch_list', 'Samsung Classic')">
+                                <rect x="101" y="340" width="118" height="38" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="160" y="356" fill="#aaa" font-size="9" font-weight="bold" text-anchor="middle">CH LIST</text>
+                            </g>
+
+                            <!-- CH Rocker -->
+                            <g class="btn-interact" onclick="sendKey('ch_up', 'Samsung Classic')">
+                                <path d="M227 295 h50 a8 8 0 0 1 8 8 v32 h-58 z" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="252" y="318" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">P ^</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('ch_down', 'Samsung Classic')">
+                                <path d="M227 340 h58 v32 a8 8 0 0 1 -8 8 h-50 z" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="252" y="363" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">P v</text>
+                            </g>
+
+                            <!-- MENU, SMART HUB, GUIDE -->
+                            <g class="btn-interact" onclick="sendKey('menu', 'Samsung Classic')">
+                                <rect x="35" y="390" width="72" height="36" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="71" y="413" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">MENU</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('smart_hub', 'Samsung Classic')">
+                                <rect x="124" y="390" width="72" height="36" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="160" y="407" fill="#ccc" font-size="9" font-weight="bold" text-anchor="middle">SMART</text>
+                                <text x="160" y="418" fill="#ccc" font-size="9" font-weight="bold" text-anchor="middle">HUB</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('guide', 'Samsung Classic')">
+                                <rect x="213" y="390" width="72" height="36" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="249" y="413" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">GUIDE</text>
+                            </g>
+
+                            <!-- TOOLS & INFO -->
+                            <g class="btn-interact" onclick="sendKey('tools', 'Samsung Classic')">
+                                <rect x="35" y="434" width="72" height="36" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="71" y="457" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">TOOLS</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('info', 'Samsung Classic')">
+                                <rect x="213" y="434" width="72" height="36" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="249" y="457" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">INFO</text>
+                            </g>
+
+                            <!-- DIRECTIONAL PAD (UP, DOWN, LEFT, RIGHT, ENTER) -->
+                            <!-- Up -->
+                            <g class="btn-interact" onclick="sendKey('up', 'Samsung Classic')">
+                                <polygon points="160,432 135,462 185,462" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <path d="M155 452l5-5 5 5" stroke="#fff" stroke-width="2" fill="none"/>
+                            </g>
+                            <!-- Down -->
+                            <g class="btn-interact" onclick="sendKey('down', 'Samsung Classic')">
+                                <polygon points="160,518 135,488 185,488" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <path d="M155 496l5 5 5-5" stroke="#fff" stroke-width="2" fill="none"/>
+                            </g>
+                            <!-- Left -->
+                            <g class="btn-interact" onclick="sendKey('left', 'Samsung Classic')">
+                                <polygon points="110,475 140,450 140,500" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <path d="M128 468l-5 7 5 7" stroke="#fff" stroke-width="2" fill="none"/>
+                            </g>
+                            <!-- Right -->
+                            <g class="btn-interact" onclick="sendKey('right', 'Samsung Classic')">
+                                <polygon points="210,475 180,450 180,500" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <path d="M192 468l5 7-5 7" stroke="#fff" stroke-width="2" fill="none"/>
+                            </g>
+                            <!-- Center OK -->
+                            <g class="btn-interact" onclick="sendKey('ok', 'Samsung Classic')">
+                                <circle cx="160" cy="475" r="23" fill="url(#btnGrad)" stroke="#444853" stroke-width="1.5"/>
+                                <text x="160" y="479" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">ENTER</text>
+                            </g>
+
+                            <!-- RETURN & EXIT -->
+                            <g class="btn-interact" onclick="sendKey('return', 'Samsung Classic')">
+                                <rect x="35" y="525" width="72" height="38" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="71" y="548" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">RETURN</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('exit', 'Samsung Classic')">
+                                <rect x="213" y="525" width="72" height="38" rx="8" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1"/>
+                                <text x="249" y="548" fill="#ccc" font-size="10" font-weight="bold" text-anchor="middle">EXIT</text>
+                            </g>
+
+                            <!-- COLORED BUTTONS (A, B, C, D) -->
+                            <g class="btn-interact" onclick="sendKey('red_a', 'Samsung Classic')">
+                                <rect x="35" y="572" width="55" height="26" rx="5" fill="#d32f2f"/>
+                                <text x="62.5" y="589" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">A</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('green_b', 'Samsung Classic')">
+                                <rect x="97" y="572" width="55" height="26" rx="5" fill="#388e3c"/>
+                                <text x="124.5" y="589" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">B</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('yellow_c', 'Samsung Classic')">
+                                <rect x="159" y="572" width="55" height="26" rx="5" fill="#fbc02d"/>
+                                <text x="186.5" y="589" fill="#222" font-size="12" font-weight="bold" text-anchor="middle">C</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('blue_d', 'Samsung Classic')">
+                                <rect x="221" y="572" width="64" height="26" rx="5" fill="#1976d2"/>
+                                <text x="253" y="589" fill="#fff" font-size="12" font-weight="bold" text-anchor="middle">D</text>
+                            </g>
+
+                            <!-- MEDIA CONTROLS & SAMSUNG BRANDING -->
+                            <!-- 4 small media buttons -->
+                            <g class="btn-interact" onclick="sendKey('rewind', 'Samsung Classic')">
+                                <rect x="35" y="608" width="55" height="28" rx="6" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <path d="M57 622l8-5v10zM47 622l8-5v10z" fill="#aaa"/>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('play', 'Samsung Classic')">
+                                <rect x="97" y="608" width="55" height="28" rx="6" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <polygon points="120,617 120,629 130,623" fill="#aaa"/>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('pause', 'Samsung Classic')">
+                                <rect x="159" y="608" width="55" height="28" rx="6" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <rect x="178" y="617" width="3" height="10" fill="#aaa"/><rect x="184" y="617" width="3" height="10" fill="#aaa"/>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('forward', 'Samsung Classic')">
+                                <rect x="221" y="608" width="64" height="28" rx="6" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <path d="M245 617l8 6-8 6v-12zM255 617l8 6-8 6v-12z" fill="#aaa"/>
+                            </g>
+
+                            <!-- SAMSUNG Logo at bottom -->
+                            <text x="160" y="668" fill="#888" font-size="16" font-weight="bold" font-family="serif" letter-spacing="4" text-anchor="middle">SAMSUNG</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- REMOTE 2: Modern Smart TV / Google TV Remote -->
+                <div class="remote-slide">
+                    <div class="remote-shell p-4 w-[310px] flex flex-col items-center relative select-none">
+                        <svg viewBox="0 0 320 720" class="w-full h-auto drop-shadow-2xl">
+                            <!-- Outer Body Shape -->
+                            <rect x="10" y="10" width="300" height="700" rx="35" fill="url(#bodyGrad)" stroke="#3a3d46" stroke-width="2"/>
+                            
+                            <!-- Mic hole & LED -->
+                            <circle cx="160" cy="24" r="3" fill="#0a0a0a"/>
+                            <text x="160" y="38" fill="#777" font-size="8" font-weight="bold" text-anchor="middle">Mic</text>
+
+                            <!-- TOP ROW: Power & Mute -->
+                            <g class="btn-interact" onclick="sendKey('power', 'Modern Smart TV')">
+                                <circle cx="85" cy="55" r="22" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1.5"/>
+                                <path d="M85 45v10M80 48.5a6 6 0 1 0 10 0" stroke="#e53935" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('mute', 'Modern Smart TV')">
+                                <circle cx="235" cy="55" r="22" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1.5"/>
+                                <path d="M227 50l4-4m0 4l-4-4" stroke="#aaa" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M232 47v16h-3l-4-4h-4v-8h4l4-4z" fill="none" stroke="#aaa" stroke-width="1.5"/>
+                            </g>
+
+                            <!-- ROWS 2-4: Numeric & Info Keypad -->
+                            <g class="btn-interact" onclick="sendKey('1', 'Modern Smart TV')"><rect x="35" y="88" width="72" height="34" rx="6" fill="url(#btnGrad)" stroke="#383b44"/><text x="71" y="110" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">1</text></g>
+                            <g class="btn-interact" onclick="sendKey('2', 'Modern Smart TV')"><rect x="124" y="88" width="72" height="34" rx="6" fill="url(#btnGrad)" stroke="#383b44"/><text x="160" y="110" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">2</text></g>
+                            <g class="btn-interact" onclick="sendKey('3', 'Modern Smart TV')"><rect x="213" y="88" width="72" height="34" rx="6" fill="url(#btnGrad)" stroke="#383b44"/><text x="249" y="110" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">3</text></g>
+
+                            <g class="btn-interact" onclick="sendKey('4', 'Modern Smart TV')"><rect x="35" y="128" width="72" height="34" rx="6" fill="url(#btnGrad)" stroke="#383b44"/><text x="71" y="150" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">4</text></g>
+                            <g class="btn-interact" onclick="sendKey('5', 'Modern Smart TV')"><rect x="124" y="128" width="72" height="34" rx="6" fill="url(#btnGrad)" stroke="#383b44"/><text x="160" y="150" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">5</text></g>
+                            <g class="btn-interact" onclick="sendKey('6', 'Modern Smart TV')"><rect x="213" y="128" width="72" height="34" rx="6" fill="url(#btnGrad)" stroke="#383b44"/><text x="249" y="150" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">6</text></g>
+
+                            <g class="btn-interact" onclick="sendKey('7', 'Modern Smart TV')"><rect x="35" y="168" width="72" height="34" rx="6" fill="url(#btnGrad)" stroke="#383b44"/><text x="71" y="190" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">7</text></g>
+                            <g class="btn-interact" onclick="sendKey('8', 'Modern Smart TV')"><rect x="124" y="168" width="72" height="34" rx="6" fill="url(#btnGrad)" stroke="#383b44"/><text x="160" y="190" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">8</text></g>
+                            <g class="btn-interact" onclick="sendKey('9', 'Modern Smart TV')"><rect x="213" y="168" width="72" height="34" rx="6" fill="url(#btnGrad)" stroke="#383b44"/><text x="249" y="190" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">9</text></g>
+
+                            <g class="btn-interact" onclick="sendKey('dash', 'Modern Smart TV')"><rect x="35" y="208" width="72" height="30" rx="6" fill="url(#btnGrad)" stroke="#383b44"/><text x="71" y="228" fill="#aaa" font-size="14" font-weight="bold" text-anchor="middle">--</text></g>
+                            <g class="btn-interact" onclick="sendKey('0', 'Modern Smart TV')"><rect x="124" y="208" width="72" height="30" rx="6" fill="url(#btnGrad)" stroke="#383b44"/><text x="160" y="228" fill="#fff" font-size="15" font-weight="bold" text-anchor="middle">0</text></g>
+                            <g class="btn-interact" onclick="sendKey('info', 'Modern Smart TV')"><rect x="213" y="208" width="72" height="30" rx="6" fill="url(#btnGrad)" stroke="#383b44"/><text x="249" y="227" fill="#aaa" font-size="10" font-weight="bold" text-anchor="middle">INFO</text></g>
+
+                            <!-- GOOGLE ASSISTANT BUTTON -->
+                            <g class="btn-interact" onclick="sendKey('assistant', 'Modern Smart TV')">
+                                <circle cx="160" cy="265" r="18" fill="url(#btnGrad)" stroke="#444853" stroke-width="1"/>
+                                <path d="M154 263c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="#4285F4" stroke-width="2" fill="none"/>
+                                <circle cx="160" cy="267" r="2.5" fill="#EA4335"/>
+                                <path d="M152 271h16" stroke="#FBBC05" stroke-width="2" stroke-linecap="round"/>
+                            </g>
+                            <!-- Bookmark & Settings side buttons -->
+                            <g class="btn-interact" onclick="sendKey('bookmark', 'Modern Smart TV')">
+                                <rect x="42" y="250" width="36" height="30" rx="6" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <path d="M56 258v12l4-3 4 3v-12z" fill="none" stroke="#aaa" stroke-width="1.5"/>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('settings', 'Modern Smart TV')">
+                                <rect x="242" y="250" width="36" height="30" rx="6" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <circle cx="260" cy="265" r="5" fill="none" stroke="#aaa" stroke-width="1.5"/>
+                            </g>
+
+                            <!-- ROUND NAVIGATION RING & OK -->
+                            <g>
+                                <!-- Outer Ring Box Area -->
+                                <circle cx="160" cy="355" r="50" fill="url(#btnGrad)" stroke="#383b44" stroke-width="1.5"/>
+                                <!-- Up Arrow -->
+                                <g class="btn-interact" onclick="sendKey('up', 'Modern Smart TV')">
+                                    <path d="M150 325l10-8 10 8z" fill="#ccc"/>
+                                </g>
+                                <!-- Down Arrow -->
+                                <g class="btn-interact" onclick="sendKey('down', 'Modern Smart TV')">
+                                    <path d="M150 385l10 8 10-8z" fill="#ccc"/>
+                                </g>
+                                <!-- Left Arrow -->
+                                <g class="btn-interact" onclick="sendKey('left', 'Modern Smart TV')">
+                                    <path d="M130 345l-8 10 8 10z" fill="#ccc"/>
+                                </g>
+                                <!-- Right Arrow -->
+                                <g class="btn-interact" onclick="sendKey('right', 'Modern Smart TV')">
+                                    <path d="M190 345l8 10-8 10z" fill="#ccc"/>
+                                </g>
+                                <!-- OK Center -->
+                                <g class="btn-interact" onclick="sendKey('ok', 'Modern Smart TV')">
+                                    <circle cx="160" cy="355" r="21" fill="#1c1d22" stroke="#555" stroke-width="1"/>
+                                    <text x="160" y="360" fill="#fff" font-size="13" font-weight="bold" text-anchor="middle">OK</text>
+                                </g>
+                            </g>
+
+                            <!-- BACK, HOME, NETFLIX / APPS -->
+                            <g class="btn-interact" onclick="sendKey('back', 'Modern Smart TV')">
+                                <path d="M55 422 h20 a12 12 0 0 1 12 12 v0 a12 12 0 0 1 -12 12 h-20 z" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <path d="M72 434l-5 4 5 4" stroke="#ccc" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('home', 'Modern Smart TV')">
+                                <circle cx="160" cy="434" r="18" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <path d="M152 438v-6l8-6 8 6v6" fill="none" stroke="#ccc" stroke-width="1.8" stroke-linecap="round"/>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('tv_exit', 'Modern Smart TV')">
+                                <path d="M245 422 h20 a12 12 0 0 1 12 12 v0 a12 12 0 0 1 -12 12 h-20 z" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <rect x="252" y="428" width="8" height="12" fill="none" stroke="#ccc" stroke-width="1.5"/>
+                            </g>
+
+                            <!-- VOLUME & CHANNEL ROCKERS -->
+                            <g class="btn-interact" onclick="sendKey('vol_up', 'Modern Smart TV')">
+                                <rect x="35" y="465" width="70" height="38" rx="8" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <text x="70" y="488" fill="#fff" font-size="20" font-weight="bold" text-anchor="middle">+</text>
+                                <text x="70" y="460" fill="#aaa" font-size="9" font-weight="bold" text-anchor="middle">VOL</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('vol_down', 'Modern Smart TV')">
+                                <rect x="35" y="508" width="70" height="38" rx="8" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <text x="70" y="533" fill="#fff" font-size="22" font-weight="bold" text-anchor="middle">-</text>
+                            </g>
+
+                            <!-- MENU & EXIT -->
+                            <g class="btn-interact" onclick="sendKey('menu', 'Modern Smart TV')">
+                                <rect x="114" y="465" width="92" height="36" rx="8" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <text x="160" y="488" fill="#ccc" font-size="11" font-weight="bold" text-anchor="middle">MENU</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('exit', 'Modern Smart TV')">
+                                <rect x="114" y="508" width="92" height="36" rx="8" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <text x="160" y="531" fill="#ccc" font-size="11" font-weight="bold" text-anchor="middle">EXIT</text>
+                            </g>
+
+                            <!-- CH Rockers -->
+                            <g class="btn-interact" onclick="sendKey('ch_up', 'Modern Smart TV')">
+                                <rect x="215" y="465" width="70" height="38" rx="8" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <text x="250" y="488" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">CH ^</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('ch_down', 'Modern Smart TV')">
+                                <rect x="215" y="508" width="70" height="38" rx="8" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <text x="250" y="531" fill="#fff" font-size="14" font-weight="bold" text-anchor="middle">CH v</text>
+                            </g>
+
+                            <!-- STREAMING / APP SHORTCUTS (Netflix, YouTube, etc.) -->
+                            <g class="btn-interact" onclick="sendKey('app_netflix', 'Modern Smart TV')">
+                                <rect x="35" y="558" width="118" height="32" rx="6" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <text x="94" y="579" fill="#E50914" font-size="11" font-weight="bold" text-anchor="middle">NETFLIX</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('app_prime', 'Modern Smart TV')">
+                                <rect x="167" y="558" width="118" height="32" rx="6" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <text x="226" y="579" fill="#00A8E1" font-size="10" font-weight="bold" text-anchor="middle">prime video</text>
+                            </g>
+
+                            <g class="btn-interact" onclick="sendKey('app_youtube', 'Modern Smart TV')">
+                                <rect x="35" y="598" width="118" height="32" rx="6" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <text x="94" y="619" fill="#FF0000" font-size="10" font-weight="bold" text-anchor="middle">YouTube</text>
+                            </g>
+                            <g class="btn-interact" onclick="sendKey('app_kinopoisk', 'Modern Smart TV')">
+                                <rect x="167" y="598" width="118" height="32" rx="6" fill="url(#btnGrad)" stroke="#383b44"/>
+                                <text x="226" y="619" fill="#FF6600" font-size="10" font-weight="bold" text-anchor="middle">КИНОПОИСК</text>
+                            </g>
+
+                            <!-- COLORED BUTTONS AT BOTTOM -->
+                            <g class="btn-interact" onclick="sendKey('red_a', 'Modern Smart TV')"><rect x="35" y="638" width="55" height="22" rx="4" fill="#e53935"/></g>
+                            <g class="btn-interact" onclick="sendKey('green_b', 'Modern Smart TV')"><rect x="97" y="638" width="55" height="22" rx="4" fill="#43a047"/></g>
+                            <g class="btn-interact" onclick="sendKey('yellow_c', 'Modern Smart TV')"><rect x="159" y="638" width="55" height="22" rx="4" fill="#fdd835"/></g>
+                            <g class="btn-interact" onclick="sendKey('blue_d', 'Modern Smart TV')"><rect x="221" y="638" width="64" height="22" rx="4" fill="#1e88e5"/></g>
+                        </svg>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Device Management / Add Device Modal -->
+    <div id="deviceModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 border border-zinc-700 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-xl font-bold text-orange-400">Устройства ТВ</h3>
+                <button onclick="closeModal()" class="w-9 h-9 rounded-full bg-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center">✕</button>
+            </div>
+
+            <!-- Saved Devices List -->
+            <div id="savedDevicesList" class="space-y-3 mb-6 max-h-48 overflow-y-auto pr-1">
+                <!-- Dynamically populated -->
+            </div>
+
+            <hr class="border-zinc-700/60 my-4">
+
+            <!-- Add New Form -->
+            <div class="space-y-4">
+                <h4 class="text-sm font-semibold text-zinc-300">Добавить новое устройство</h4>
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1">IP-адрес устройства</label>
+                    <input type="text" id="newDeviceIp" placeholder="192.168.1.50" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1">Название устройства</label>
+                    <input type="text" id="newDeviceName" placeholder="Телевизор в гостиной" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-orange-500">
+                </div>
+                <button onclick="saveNewDevice()" class="w-full bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 font-semibold py-3 rounded-xl transition text-white shadow-lg">
+                    Сохранить устройство
+                </button>
+            </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        // State Management
+        let devices = JSON.parse(localStorage.getItem('tv_remote_devices')) || [];
+        let currentDeviceIndex = parseInt(localStorage.getItem('tv_remote_active_idx')) || 0;
+        let activeRemoteSlide = 0;
+
+        // Initialize on load
+        window.onload = function() {
+            if (devices.length === 0) {
+                // Add a default sample device for quick testing
+                devices.push({ name: "Samsung Smart TV", ip: "192.168.1.100" });
+                saveDevices();
+            }
+            updateDeviceDisplay();
+            renderDevicesList();
+            setupSwipeGestures();
+        };
+
+        // Modal Controls
+        function openModal() {
+            document.getElementById('deviceModal').classList.remove('hidden');
+            renderDevicesList();
+        }
+
+        function openDeviceSelector() {
+            openModal();
+        }
+
+        function closeModal() {
+            document.getElementById('deviceModal').classList.add('hidden');
+        }
+
+        // Device Management Functions
+        function saveNewDevice() {
+            const ip = document.getElementById('newDeviceIp').value.trim();
+            const name = document.getElementById('newDeviceName').value.trim();
+
+            if (!ip || !name) {
+                showToast("Пожалуйста, заполните IP и название!");
+                return;
+            }
+
+            devices.push({ name, ip });
+            currentDeviceIndex = devices.length - 1;
+            saveDevices();
+
+            document.getElementById('newDeviceIp').value = '';
+            document.getElementById('newDeviceName').value = '';
+            
+            updateDeviceDisplay();
+            renderDevicesList();
+            closeModal();
+            showToast(`Устройство "${name}" сохранено!`);
+        }
+
+        function selectDevice(index) {
+            currentDeviceIndex = index;
+            localStorage.setItem('tv_remote_active_idx', currentDeviceIndex);
+            updateDeviceDisplay();
+            closeModal();
+            showToast(`Выбран: ${devices[index].name}`);
+        }
+
+        function deleteDevice(index, event) {
+            event.stopPropagation();
+            devices.splice(index, 1);
+            if (currentDeviceIndex >= devices.length) {
+                currentDeviceIndex = Math.max(0, devices.length - 1);
+            }
+            saveDevices();
+            updateDeviceDisplay();
+            renderDevicesList();
+        }
+
+        function saveDevices() {
+            localStorage.setItem('tv_remote_devices', JSON.stringify(devices));
+            localStorage.setItem('tv_remote_active_idx', currentDeviceIndex);
+        }
+
+        function updateDeviceDisplay() {
+            const nameEl = document.getElementById('currentDeviceName');
+            const dotEl = document.getElementById('deviceStatusDot');
+
+            if (devices.length === 0 || !devices[currentDeviceIndex]) {
+                nameEl.textContent = "Нет устройств";
+                dotEl.className = "w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse flex-shrink-0";
+            } else {
+                nameEl.textContent = devices[currentDeviceIndex].name;
+                dotEl.className = "w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0";
+            }
+        }
+
+        function renderDevicesList() {
+            const listEl = document.getElementById('savedDevicesList');
+            listEl.innerHTML = '';
+
+            if (devices.length === 0) {
+                listEl.innerHTML = '<p class="text-xs text-zinc-500 text-center py-2">Список пуст. Добавьте устройство ниже.</p>';
+                return;
+            }
+
+            devices.forEach((dev, idx) => {
+                const isSelected = idx === currentDeviceIndex;
+                const div = document.createElement('div');
+                div.className = `flex items-center justify-between p-3 rounded-xl border cursor-pointer transition ${isSelected ? 'bg-orange-500/10 border-orange-500/50' : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'}`;
+                div.onclick = () => selectDevice(idx);
+
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3 truncate">
+                        <div class="w-2 h-2 rounded-full ${isSelected ? 'bg-orange-500' : 'bg-zinc-600'}"></div>
+                        <div class="truncate">
+                            <p class="text-sm font-medium text-white truncate">${dev.name}</p>
+                            <p class="text-xs text-zinc-400">${dev.ip}</p>
+                        </div>
+                    </div>
+                    <button onclick="deleteDevice(${idx}, event)" class="p-2 text-zinc-500 hover:text-red-400 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                `;
+                listEl.appendChild(div);
+            });
+        }
+
+        // Remote Switcher & Carousel
+        function switchRemote(index) {
+            activeRemoteSlide = index;
+            const track = document.getElementById('remotesTrack');
+            track.style.transform = `translateX(-${index * 50}%)`;
+
+            document.getElementById('dotBtn1').className = index === 0 ? 'w-3 h-3 rounded-full bg-orange-500 transition' : 'w-3 h-3 rounded-full bg-zinc-700 transition';
+            document.getElementById('dotBtn2').className = index === 1 ? 'w-3 h-3 rounded-full bg-orange-500 transition' : 'w-3 h-3 rounded-full bg-zinc-700 transition';
+        }
+
+        // Swipe Gestures
+        function setupSwipeGestures() {
+            const area = document.getElementById('swipeArea');
+            let startX = 0;
+            let startY = 0;
+
+            area.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX;
+                startY = e.touches[0].clientY;
+            }, {passive: true});
+
+            area.addEventListener('touchend', (e) => {
+                let diffX = e.changedTouches[0].clientX - startX;
+                let diffY = e.changedTouches[0].clientY - startY;
+
+                // Ensure horizontal swipe is dominant over vertical scroll
+                if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                    if (diffX > 0) {
+                        switchRemote(0); // Swipe right -> Remote 1
+                    } else {
+                        switchRemote(1); // Swipe left -> Remote 2
+                    }
+                }
+            }, {passive: true});
+        }
+
+        // Command Sending function (fetch with no-cors)
+        function sendKey(action, remoteName) {
+            if (devices.length === 0 || !devices[currentDeviceIndex]) {
+                showToast("Сначала добавьте и выберите устройство ТВ!");
+                openModal();
+                return;
+            }
+
+            const targetIp = devices[currentDeviceIndex].ip;
+            const targetUrl = `http://${targetIp}:8080/command?action=${action}`;
+
+            console.log(`[${remoteName}] Sending command '${action}' to IP: ${targetIp}`);
+
+            // Visual feedback
+            showToast(`Команда: ${action.toUpperCase()}`);
+
+            // Fetch with no-cors to local TV server
+            fetch(targetUrl, {
+                method: 'GET',
+                mode: 'no-cors'
+            }).catch(err => {
+                console.log("Network transmission completed (no-cors mode).");
+            });
+        }
+
+        // Toast Notification helper
+        function showToast(message) {
+            const existing = document.getElementById('toastMsg');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.id = 'toastMsg';
+            toast.className = 'fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-zinc-800 border border-zinc-700 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl z-50 animate-in fade-in slide-in-from-bottom-4 duration-150';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'transition', 'duration-300');
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+    </script>
 </body>
 </html>
