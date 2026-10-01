@@ -7,13 +7,15 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .remote-container {
     background: #1e1e1e;
     padding: 20px;
-    border-radius: 24px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    border-radius: 28px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -35,27 +37,32 @@ h2 {
     gap: 8px;
 }
 
-.settings label {
-    font-size: 12px;
-    color: #aaa;
-}
-
-.settings select {
+.settings input {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
+    box-sizing: border-box;
     background: #2d2d2d;
     border: 1px solid #444;
-    border-radius: 8px;
+    border-radius: 10px;
     color: #fff;
     font-size: 14px;
     outline: none;
+    text-align: center;
 }
 
-.scan-btn {
+.settings input:focus {
+    border-color: #ff7e00;
+}
+
+.save-btn {
     background: #333;
+    color: #ccc;
+    border: none;
+    border-radius: 8px;
     height: 35px;
     font-size: 13px;
-    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
 }
 
 .remote {
@@ -69,20 +76,24 @@ button {
     background: #2d2d2d;
     color: #fff;
     border: none;
-    border-radius: 12px;
-    height: 55px;
+    border-radius: 14px;
+    height: 60px;
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.15s;
+    transition: 0.1s;
 }
 
 button:active {
     background: linear-gradient(135deg, #ff7e00, #ff5500);
-    transform: scale(0.95);
+    transform: scale(0.94);
 }
 
 .power {
     background: #b71c1c;
     grid-column: span 3;
+}
+
+.power:active {
+    background: #d32f2f;
 }
