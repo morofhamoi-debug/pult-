@@ -1,26 +1,49 @@
+// При загрузке страницы сразу ищем телевизоры в сети
+window.onload = function() {
+    scanNetwork();
+};
+
+function scanNetwork() {
+    const select = document.getElementById('tv-select');
+    select.innerHTML = '<option>Идет сканирование сети...</option>';
+
+    fetch('/scan')
+        .then(response => response.json())
+        .then(data => {
+            select.innerHTML = '';
+            if (data.tvs && data.tvs.length > 0) {
+                data.tvs.forEach(tv => {
+                    let option = document.createElement('option');
+                    option.value = tv.ip;
+                    option.textContent = `${tv.name} (${tv.ip})`;
+                    select.appendChild(option);
+                });
+            } else {
+                let option = document.createElement('option');
+                option.value = "";
+                option.textContent = "Телевизоры не найдены";
+                select.appendChild(option);
+            }
+        })
+        .catch(err => {
+            console.error('Ошибка сканирования:', err);
+            select.innerHTML = '<option>Ошибка поиска</option>';
+        });
+}
+
 function sendKey(action) {
-    const ipInput = document.getElementById('tv-ip').value.trim();
-    
-    if (!ipInput) {
-        alert('Пожалуйста, введи IP-адрес телевизора!');
+    const select = document.getElementById('tv-select');
+    const ip = select.value;
+
+    if (!ip) {
+        alert('Сначала выбери телевизор из списка!');
         return;
     }
 
-    // Пример формирования URL для отправки запроса на телевизор
-    // (Порты и пути могут отличаться в зависимости от модели телевизора)
-    const url = `http://${ipInput}:8080/command?action=${action}`;
-
-    console.log(`Отправка команды "${action}" на адрес: ${url}`);
-
-    // Отправляем запрос через сеть Wi-Fi
-    fetch(url, {
-        method: 'GET',
-        mode: 'no-cors' // важно для локальной сети, чтобы браузер не блокировал запрос
-    })
-    .then(() => {
-        console.log('Команда успешно отправлена');
-    })
-    .catch(error => {
-        console.error('Ошибка отправки:', error);
-    });
+    fetch(`/control?ip=${ip}&action=${action}`)
+        .then(res => res.json())
+        .then(data => {
+            console.log('Ответ:', data);
+        })
+        .catch(err => console.error('Ошибка отправки:', err));
 }
