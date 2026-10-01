@@ -1,49 +1,40 @@
-// При загрузке страницы сразу ищем телевизоры в сети
+// Автоматически подставляем сохраненный IP при открытии страницы
 window.onload = function() {
-    scanNetwork();
+    const savedIp = localStorage.getItem('tv_ip');
+    if (savedIp) {
+        document.getElementById('tv-ip').value = savedIp;
+    }
 };
 
-function scanNetwork() {
-    const select = document.getElementById('tv-select');
-    select.innerHTML = '<option>Идет сканирование сети...</option>';
-
-    fetch('/scan')
-        .then(response => response.json())
-        .then(data => {
-            select.innerHTML = '';
-            if (data.tvs && data.tvs.length > 0) {
-                data.tvs.forEach(tv => {
-                    let option = document.createElement('option');
-                    option.value = tv.ip;
-                    option.textContent = `${tv.name} (${tv.ip})`;
-                    select.appendChild(option);
-                });
-            } else {
-                let option = document.createElement('option');
-                option.value = "";
-                option.textContent = "Телевизоры не найдены";
-                select.appendChild(option);
-            }
-        })
-        .catch(err => {
-            console.error('Ошибка сканирования:', err);
-            select.innerHTML = '<option>Ошибка поиска</option>';
-        });
+function saveIp() {
+    const ip = document.getElementById('tv-ip').value.trim();
+    if (ip) {
+        localStorage.setItem('tv_ip', ip);
+        alert('IP успешно сохранен!');
+    } else {
+        alert('Введите корректный IP!');
+    }
 }
 
 function sendKey(action) {
-    const select = document.getElementById('tv-select');
-    const ip = select.value;
-
+    const ip = document.getElementById('tv-ip').value.trim();
+    
     if (!ip) {
-        alert('Сначала выбери телевизор из списка!');
+        alert('Сначала введи и сохрани IP-адрес телевизора!');
         return;
     }
 
-    fetch(`/control?ip=${ip}&action=${action}`)
-        .then(res => res.json())
-        .then(data => {
-            console.log('Ответ:', data);
-        })
-        .catch(err => console.error('Ошибка отправки:', err));
+    // URL для отправки команд (зависит от того, как телевизор принимает запросы)
+    const url = `http://${ip}:8080/command?action=${action}`;
+
+    console.log(`Отправка: ${action} на ${url}`);
+
+    // Отправка запроса по локальной сети Wi-Fi
+    fetch(url, {
+        method: 'GET',
+        mode: 'no-cors' // важно, чтобы браузер не ругался на локальную сеть
+    })
+    .catch(error => {
+        console.error('Ошибка:', error);
+    });
 }
