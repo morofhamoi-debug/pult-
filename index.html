@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto-Discovery TV Remote</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>TV Remote</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,23 +11,24 @@
     <div class="remote-container">
         <h2>Пульт ТВ</h2>
         
-        <!-- Блок выбора найденного телевизора -->
+        <!-- Поле для ввода IP-адреса телевизора -->
         <div class="settings">
-            <label for="tv-select">Найденные телевизоры:</label>
-            <select id="tv-select">
-                <option value="">Поиск телевизоров...</option>
-            </select>
-            <button class="scan-btn" onclick="scanNetwork()">Искать снова</button>
+            <input type="text" id="tv-ip" placeholder="IP телевизора (например, 192.168.1.50)">
+            <button onclick="saveIp()" class="save-btn">Сохранить IP</button>
         </div>
 
+        <!-- Кнопки пульта -->
         <div class="remote">
             <button class="power" onclick="sendKey('power')">POWER</button>
+            
             <button onclick="sendKey('vol_up')">VOL +</button>
             <button onclick="sendKey('mute')">MUTE</button>
             <button onclick="sendKey('ch_up')">CH +</button>
+            
             <button onclick="sendKey('vol_down')">VOL -</button>
             <button onclick="sendKey('home')">HOME</button>
             <button onclick="sendKey('ch_down')">CH -</button>
+            
             <button onclick="sendKey('left')">◀</button>
             <button onclick="sendKey('ok')">OK</button>
             <button onclick="sendKey('right')">▶</button>
@@ -37,4 +38,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
