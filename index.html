@@ -8,85 +8,186 @@
 </head>
 <body>
 
-<div class="remote">
-    <!-- Верхняя панель -->
-    <div class="top-bar">
-        <button class="btn power-btn" data-key="KEY_POWER">⏻</button>
-        <span class="status" id="status">Офлайн</span>
-        <button class="btn source-btn" data-key="KEY_SOURCE">SOURCE</button>
+<!-- Верхняя панель -->
+<header class="header">
+    <button class="add-btn" id="addDeviceBtn">+</button>
+    <div class="device-indicator" id="deviceName">Нет устройств</div>
+</header>
+
+<!-- Свайпаемый контейнер с пультами -->
+<div class="remote-container" id="remoteContainer">
+    
+    <!-- ПУЛЬТ 1: Обычный (как на первом фото) -->
+    <div class="remote-slide">
+        <svg viewBox="0 0 300 800" class="remote-svg" xmlns="http://www.w3.org/2000/svg">
+            <!-- Корпус -->
+            <rect x="10" y="10" width="280" height="780" rx="30" fill="#2a2a2a" stroke="#444" stroke-width="2"/>
+            
+            <!-- Верх: Power и Source -->
+            <g class="btn" data-key="KEY_POWER"><circle cx="50" cy="50" r="22" fill="#d32f2f"/><text x="50" y="56" fill="#fff" font-size="20" text-anchor="middle">⏻</text></g>
+            <g class="btn" data-key="KEY_SOURCE"><rect x="200" y="30" width="60" height="40" rx="8" fill="#333"/><text x="230" y="55" fill="#fff" font-size="10" text-anchor="middle">SOURCE</text></g>
+
+            <!-- Цифры -->
+            <g class="btn" data-key="KEY_1"><rect x="40" y="90" width="60" height="45" rx="8" fill="#333"/><text x="70" y="120" fill="#fff" font-size="18" text-anchor="middle">1</text></g>
+            <g class="btn" data-key="KEY_2"><rect x="120" y="90" width="60" height="45" rx="8" fill="#333"/><text x="150" y="120" fill="#fff" font-size="18" text-anchor="middle">2</text></g>
+            <g class="btn" data-key="KEY_3"><rect x="200" y="90" width="60" height="45" rx="8" fill="#333"/><text x="230" y="120" fill="#fff" font-size="18" text-anchor="middle">3</text></g>
+            
+            <g class="btn" data-key="KEY_4"><rect x="40" y="145" width="60" height="45" rx="8" fill="#333"/><text x="70" y="175" fill="#fff" font-size="18" text-anchor="middle">4</text></g>
+            <g class="btn" data-key="KEY_5"><rect x="120" y="145" width="60" height="45" rx="8" fill="#333"/><text x="150" y="175" fill="#fff" font-size="18" text-anchor="middle">5</text></g>
+            <g class="btn" data-key="KEY_6"><rect x="200" y="145" width="60" height="45" rx="8" fill="#333"/><text x="230" y="175" fill="#fff" font-size="18" text-anchor="middle">6</text></g>
+
+            <g class="btn" data-key="KEY_7"><rect x="40" y="200" width="60" height="45" rx="8" fill="#333"/><text x="70" y="230" fill="#fff" font-size="18" text-anchor="middle">7</text></g>
+            <g class="btn" data-key="KEY_8"><rect x="120" y="200" width="60" height="45" rx="8" fill="#333"/><text x="150" y="230" fill="#fff" font-size="18" text-anchor="middle">8</text></g>
+            <g class="btn" data-key="KEY_9"><rect x="200" y="200" width="60" height="45" rx="8" fill="#333"/><text x="230" y="230" fill="#fff" font-size="18" text-anchor="middle">9</text></g>
+
+            <g class="btn" data-key="KEY_TTX_MIX"><rect x="40" y="255" width="60" height="35" rx="6" fill="#333"/><text x="70" y="277" fill="#aaa" font-size="8" text-anchor="middle">TTX/MIX</text></g>
+            <g class="btn" data-key="KEY_0"><rect x="120" y="255" width="60" height="45" rx="8" fill="#333"/><text x="150" y="285" fill="#fff" font-size="18" text-anchor="middle">0</text></g>
+            <g class="btn" data-key="KEY_PRECH"><rect x="200" y="255" width="60" height="35" rx="6" fill="#333"/><text x="230" y="277" fill="#aaa" font-size="8" text-anchor="middle">PRE-CH</text></g>
+
+            <!-- Громкость и Каналы -->
+            <g class="btn" data-key="KEY_VOLUP"><rect x="40" y="320" width="35" height="45" rx="8" fill="#333"/><text x="57.5" y="348" fill="#fff" font-size="20" text-anchor="middle">+</text></g>
+            <g class="btn" data-key="KEY_VOLDOWN"><rect x="40" y="370" width="35" height="45" rx="8" fill="#333"/><text x="57.5" y="398" fill="#fff" font-size="20" text-anchor="middle">-</text></g>
+            
+            <g class="btn" data-key="KEY_MUTE"><rect x="100" y="320" width="100" height="30" rx="6" fill="#333"/><text x="150" y="340" fill="#fff" font-size="10" text-anchor="middle">MUTE</text></g>
+            <g class="btn" data-key="KEY_CH_LIST"><rect x="100" y="360" width="100" height="55" rx="6" fill="#333"/><text x="150" y="392" fill="#fff" font-size="10" text-anchor="middle">CH LIST</text></g>
+
+            <g class="btn" data-key="KEY_CHUP"><rect x="225" y="320" width="35" height="45" rx="8" fill="#333"/><text x="242.5" y="348" fill="#fff" font-size="12" text-anchor="middle">P ^</text></g>
+            <g class="btn" data-key="KEY_CHDOWN"><rect x="225" y="370" width="35" height="45" rx="8" fill="#333"/><text x="242.5" y="398" fill="#fff" font-size="12" text-anchor="middle">P v</text></g>
+
+            <!-- Меню -->
+            <g class="btn" data-key="KEY_MENU"><rect x="30" y="435" width="70" height="35" rx="6" fill="#333"/><text x="65" y="457" fill="#fff" font-size="9" text-anchor="middle">MENU</text></g>
+            <g class="btn" data-key="KEY_SMART_HUB"><rect x="110" y="435" width="80" height="35" rx="6" fill="#333"/><text x="150" y="452" fill="#fff" font-size="8" text-anchor="middle">SMART</text><text x="150" y="462" fill="#fff" font-size="8" text-anchor="middle">HUB</text></g>
+            <g class="btn" data-key="KEY_GUIDE"><rect x="200" y="435" width="70" height="35" rx="6" fill="#333"/><text x="235" y="457" fill="#fff" font-size="9" text-anchor="middle">GUIDE</text></g>
+
+            <!-- D-Pad -->
+            <g class="btn" data-key="KEY_UP"><rect x="130" y="485" width="40" height="30" rx="6" fill="#333"/><path d="M150 495 l-6 10 h12 z" fill="#fff"/></g>
+            <g class="btn" data-key="KEY_DOWN"><rect x="130" y="575" width="40" height="30" rx="6" fill="#333"/><path d="M150 595 l-6 -10 h12 z" fill="#fff"/></g>
+            <g class="btn" data-key="KEY_LEFT"><rect x="85" y="525" width="40" height="30" rx="6" fill="#333"/><path d="M105 540 l10 -6 v12 z" fill="#fff"/></g>
+            <g class="btn" data-key="KEY_RIGHT"><rect x="175" y="525" width="40" height="30" rx="6" fill="#333"/><path d="M195 540 l-10 -6 v12 z" fill="#fff"/></g>
+            <g class="btn" data-key="KEY_ENTER"><circle cx="150" cy="540" r="28" fill="#222" stroke="#555" stroke-width="2"/><text x="150" y="545" fill="#fff" font-size="10" text-anchor="middle">ENTER</text></g>
+
+            <!-- Нижнее меню -->
+            <g class="btn" data-key="KEY_TOOLS"><rect x="30" y="620" width="70" height="35" rx="6" fill="#333"/><text x="65" y="642" fill="#fff" font-size="9" text-anchor="middle">TOOLS</text></g>
+            <g class="btn" data-key="KEY_INFO"><rect x="200" y="620" width="70" height="35" rx="6" fill="#333"/><text x="235" y="642" fill="#fff" font-size="9" text-anchor="middle">INFO</text></g>
+            
+            <g class="btn" data-key="KEY_RETURN"><rect x="30" y="665" width="70" height="35" rx="6" fill="#333"/><text x="65" y="687" fill="#fff" font-size="9" text-anchor="middle">RETURN</text></g>
+            <g class="btn" data-key="KEY_EXIT"><rect x="200" y="665" width="70" height="35" rx="6" fill="#333"/><text x="235" y="687" fill="#fff" font-size="9" text-anchor="middle">EXIT</text></g>
+
+            <!-- Цветные кнопки -->
+            <g class="btn" data-key="KEY_RED"><rect x="30" y="715" width="50" height="25" rx="6" fill="#d32f2f"/><text x="55" y="733" fill="#fff" font-size="12" text-anchor="middle">A</text></g>
+            <g class="btn" data-key="KEY_GREEN"><rect x="90" y="715" width="50" height="25" rx="6" fill="#388e3c"/><text x="115" y="733" fill="#fff" font-size="12" text-anchor="middle">B</text></g>
+            <g class="btn" data-key="KEY_YELLOW"><rect x="150" y="715" width="50" height="25" rx="6" fill="#fbc02d"/><text x="175" y="733" fill="#000" font-size="12" text-anchor="middle">C</text></g>
+            <g class="btn" data-key="KEY_BLUE"><rect x="210" y="715" width="50" height="25" rx="6" fill="#1976d2"/><text x="235" y="733" fill="#fff" font-size="12" text-anchor="middle">D</text></g>
+
+            <!-- Медиа -->
+            <g class="btn" data-key="KEY_REWIND"><rect x="40" y="755" width="40" height="30" rx="6" fill="#333"/><text x="60" y="775" fill="#fff" font-size="14" text-anchor="middle">◀◀</text></g>
+            <g class="btn" data-key="KEY_PLAY"><rect x="90" y="755" width="40" height="30" rx="6" fill="#333"/><text x="110" y="775" fill="#fff" font-size="14" text-anchor="middle">▶</text></g>
+            <g class="btn" data-key="KEY_PAUSE"><rect x="140" y="755" width="40" height="30" rx="6" fill="#333"/><text x="160" y="775" fill="#fff" font-size="14" text-anchor="middle">⏸</text></g>
+            <g class="btn" data-key="KEY_FF"><rect x="190" y="755" width="40" height="30" rx="6" fill="#333"/><text x="210" y="775" fill="#fff" font-size="14" text-anchor="middle">▶▶</text></g>
+
+            <text x="150" y="810" fill="#555" font-size="12" font-family="sans-serif" text-anchor="middle" letter-spacing="2">SAMSUNG</text>
+        </svg>
     </div>
 
-    <!-- Цифровая панель -->
-    <div class="numpad">
-        <button class="btn num" data-key="KEY_1">1</button>
-        <button class="btn num" data-key="KEY_2">2</button>
-        <button class="btn num" data-key="KEY_3">3</button>
-        <button class="btn num" data-key="KEY_4">4</button>
-        <button class="btn num" data-key="KEY_5">5</button>
-        <button class="btn num" data-key="KEY_6">6</button>
-        <button class="btn num" data-key="KEY_7">7</button>
-        <button class="btn num" data-key="KEY_8">8</button>
-        <button class="btn num" data-key="KEY_9">9</button>
-        <button class="btn num" data-key="KEY_TTX_MIX">TTX/MIX</button>
-        <button class="btn num" data-key="KEY_0">0</button>
-        <button class="btn num" data-key="KEY_PRECH">PRE-CH</button>
-    </div>
+    <!-- ПУЛЬТ 2: Smart (как на втором фото) -->
+    <div class="remote-slide">
+        <svg viewBox="0 0 300 850" class="remote-svg" xmlns="http://www.w3.org/2000/svg">
+            <!-- Корпус -->
+            <rect x="10" y="10" width="280" height="830" rx="40" fill="#2a2a2a" stroke="#444" stroke-width="2"/>
 
-    <!-- Громкость и Каналы -->
-    <div class="row-controls">
-        <div class="col">
-            <button class="btn rocker" data-key="KEY_VOLUP">+</button>
-            <button class="btn rocker" data-key="KEY_VOLDOWN">-</button>
-        </div>
-        <div class="col">
-            <button class="btn wide" data-key="KEY_MUTE">MUTE</button>
-            <button class="btn wide" data-key="KEY_CH_LIST">CH LIST</button>
-        </div>
-        <div class="col">
-            <button class="btn rocker" data-key="KEY_CHUP">P ^</button>
-            <button class="btn rocker" data-key="KEY_CHDOWN">P v</button>
-        </div>
-    </div>
+            <!-- Верх: Power, Mic, Media -->
+            <g class="btn" data-key="KEY_POWER"><circle cx="45" cy="45" r="18" fill="#d32f2f"/><text x="45" y="51" fill="#fff" font-size="16" text-anchor="middle">⏻</text></g>
+            <text x="150" y="45" fill="#aaa" font-size="10" text-anchor="middle">Mic</text>
+            <g class="btn" data-key="KEY_MIC"><circle cx="150" cy="60" r="15" fill="#333"/><text x="150" y="65" fill="#fff" font-size="12" text-anchor="middle">🎤</text></g>
+            <g class="btn" data-key="KEY_MEDIA"><rect x="210" y="30" width="60" height="40" rx="8" fill="#333"/><text x="240" y="55" fill="#fff" font-size="10" text-anchor="middle">MEDIA</text></g>
+            
+            <!-- Цветные индикаторы -->
+            <circle cx="40" cy="75" r="4" fill="#d32f2f"/>
+            <circle cx="55" cy="75" r="4" fill="#388e3c"/>
+            <circle cx="70" cy="75" r="4" fill="#fbc02d"/>
+            <circle cx="85" cy="75" r="4" fill="#1976d2"/>
 
-    <!-- Меню и Навигация -->
-    <div class="menu-row">
-        <button class="btn menu-btn" data-key="KEY_MENU">MENU</button>
-        <button class="btn menu-btn" data-key="KEY_SMART_HUB">SMART HUB</button>
-        <button class="btn menu-btn" data-key="KEY_GUIDE">GUIDE</button>
-    </div>
+            <!-- Цифры -->
+            <g class="btn" data-key="KEY_1"><rect x="45" y="100" width="55" height="40" rx="8" fill="#333"/><text x="72.5" y="126" fill="#fff" font-size="18" text-anchor="middle">1</text></g>
+            <g class="btn" data-key="KEY_2"><rect x="120" y="100" width="55" height="40" rx="8" fill="#333"/><text x="147.5" y="126" fill="#fff" font-size="18" text-anchor="middle">2</text></g>
+            <g class="btn" data-key="KEY_3"><rect x="195" y="100" width="55" height="40" rx="8" fill="#333"/><text x="222.5" y="126" fill="#fff" font-size="18" text-anchor="middle">3</text></g>
+            
+            <g class="btn" data-key="KEY_4"><rect x="45" y="150" width="55" height="40" rx="8" fill="#333"/><text x="72.5" y="176" fill="#fff" font-size="18" text-anchor="middle">4</text></g>
+            <g class="btn" data-key="KEY_5"><rect x="120" y="150" width="55" height="40" rx="8" fill="#333"/><text x="147.5" y="176" fill="#fff" font-size="18" text-anchor="middle">5</text></g>
+            <g class="btn" data-key="KEY_6"><rect x="195" y="150" width="55" height="40" rx="8" fill="#333"/><text x="222.5" y="176" fill="#fff" font-size="18" text-anchor="middle">6</text></g>
 
-    <div class="dpad-container">
-        <button class="btn dpad up" data-key="KEY_UP">▲</button>
-        <button class="btn dpad left" data-key="KEY_LEFT">◀</button>
-        <button class="btn dpad enter" data-key="KEY_ENTER">ENTER</button>
-        <button class="btn dpad right" data-key="KEY_RIGHT">▶</button>
-        <button class="btn dpad down" data-key="KEY_DOWN">▼</button>
-    </div>
+            <g class="btn" data-key="KEY_7"><rect x="45" y="200" width="55" height="40" rx="8" fill="#333"/><text x="72.5" y="226" fill="#fff" font-size="18" text-anchor="middle">7</text></g>
+            <g class="btn" data-key="KEY_8"><rect x="120" y="200" width="55" height="40" rx="8" fill="#333"/><text x="147.5" y="226" fill="#fff" font-size="18" text-anchor="middle">8</text></g>
+            <g class="btn" data-key="KEY_9"><rect x="195" y="200" width="55" height="40" rx="8" fill="#333"/><text x="222.5" y="226" fill="#fff" font-size="18" text-anchor="middle">9</text></g>
 
-    <div class="menu-row">
-        <button class="btn menu-btn" data-key="KEY_TOOLS">TOOLS</button>
-        <button class="btn menu-btn" data-key="KEY_INFO">INFO</button>
-        <button class="btn menu-btn" data-key="KEY_RETURN">RETURN</button>
-        <button class="btn menu-btn" data-key="KEY_EXIT">EXIT</button>
-    </div>
+            <g class="btn" data-key="KEY_DASH"><rect x="45" y="250" width="55" height="35" rx="6" fill="#333"/><text x="72.5" y="272" fill="#fff" font-size="14" text-anchor="middle">-/-</text></g>
+            <g class="btn" data-key="KEY_0"><rect x="120" y="250" width="55" height="40" rx="8" fill="#333"/><text x="147.5" y="276" fill="#fff" font-size="18" text-anchor="middle">0</text></g>
+            <g class="btn" data-key="KEY_INFO"><rect x="195" y="250" width="55" height="35" rx="6" fill="#333"/><text x="222.5" y="272" fill="#fff" font-size="9" text-anchor="middle">INFO</text></g>
 
-    <!-- Цветные кнопки -->
-    <div class="color-row">
-        <button class="btn color red" data-key="KEY_RED">A</button>
-        <button class="btn color green" data-key="KEY_GREEN">B</button>
-        <button class="btn color yellow" data-key="KEY_YELLOW">C</button>
-        <button class="btn color blue" data-key="KEY_BLUE">D</button>
-    </div>
+            <!-- D-Pad Area -->
+            <g class="btn" data-key="KEY_MIC"><circle cx="150" cy="310" r="20" fill="#444"/><text x="150" y="316" fill="#fff" font-size="16" text-anchor="middle">🎤</text></g>
+            
+            <g class="btn" data-key="KEY_SETTINGS"><circle cx="220" cy="330" r="15" fill="#333"/><text x="220" y="335" fill="#fff" font-size="14" text-anchor="middle">⚙</text></g>
+            <g class="btn" data-key="KEY_HOME"><circle cx="80" cy="330" r="15" fill="#333"/><text x="80" y="335" fill="#fff" font-size="14" text-anchor="middle">🏠</text></g>
 
-    <!-- Медиа -->
-    <div class="media-row">
-        <button class="btn" data-key="KEY_REWIND">◀◀</button>
-        <button class="btn" data-key="KEY_PLAY">▶</button>
-        <button class="btn" data-key="KEY_PAUSE">⏸</button>
-        <button class="btn" data-key="KEY_FF">▶▶</button>
-    </div>
+            <g class="btn" data-key="KEY_UP"><rect x="130" y="340" width="40" height="25" rx="6" fill="#333"/><path d="M150 348 l-6 10 h12 z" fill="#fff"/></g>
+            <g class="btn" data-key="KEY_DOWN"><rect x="130" y="420" width="40" height="25" rx="6" fill="#333"/><path d="M150 438 l-6 -10 h12 z" fill="#fff"/></g>
+            <g class="btn" data-key="KEY_LEFT"><rect x="90" y="375" width="40" height="25" rx="6" fill="#333"/><path d="M110 388 l10 -6 v12 z" fill="#fff"/></g>
+            <g class="btn" data-key="KEY_RIGHT"><rect x="170" y="375" width="40" height="25" rx="6" fill="#333"/><path d="M190 388 l-10 -6 v12 z" fill="#fff"/></g>
+            <g class="btn" data-key="KEY_ENTER"><circle cx="150" cy="387.5" r="25" fill="#222" stroke="#555" stroke-width="2"/><text x="150" y="392" fill="#fff" font-size="10" text-anchor="middle">OK</text></g>
 
-    <div class="brand">SAMSUNG</div>
+            <g class="btn" data-key="KEY_BACK"><circle cx="80" cy="440" r="15" fill="#333"/><text x="80" y="445" fill="#fff" font-size="14" text-anchor="middle">←</text></g>
+            <g class="btn" data-key="KEY_PLAY_PAUSE"><circle cx="150" cy="460" r="15" fill="#333"/><text x="150" y="465" fill="#fff" font-size="12" text-anchor="middle">▶⏸</text></g>
+
+            <!-- Громкость и Каналы -->
+            <g class="btn" data-key="KEY_VOLUP"><rect x="40" y="500" width="30" height="45" rx="8" fill="#333"/><text x="55" y="528" fill="#fff" font-size="18" text-anchor="middle">+</text></g>
+            <text x="55" y="560" fill="#aaa" font-size="8" text-anchor="middle">VOL</text>
+            <g class="btn" data-key="KEY_VOLDOWN"><rect x="40" y="565" width="30" height="45" rx="8" fill="#333"/><text x="55" y="593" fill="#fff" font-size="18" text-anchor="middle">-</text></g>
+
+            <g class="btn" data-key="KEY_MENU"><rect x="100" y="500" width="100" height="30" rx="6" fill="#333"/><text x="150" y="520" fill="#fff" font-size="10" text-anchor="middle">MENU</text></g>
+            <g class="btn" data-key="KEY_EXIT"><rect x="100" y="540" width="100" height="30" rx="6" fill="#333"/><text x="150" y="560" fill="#fff" font-size="10" text-anchor="middle">EXIT</text></g>
+
+            <g class="btn" data-key="KEY_CHUP"><rect x="230" y="500" width="30" height="45" rx="8" fill="#333"/><text x="245" y="528" fill="#fff" font-size="12" text-anchor="middle">∧</text></g>
+            <text x="245" y="560" fill="#aaa" font-size="8" text-anchor="middle">CH</text>
+            <g class="btn" data-key="KEY_CHDOWN"><rect x="230" y="565" width="30" height="45" rx="8" fill="#333"/><text x="245" y="593" fill="#fff" font-size="12" text-anchor="middle">∨</text></g>
+
+            <!-- Нижние кнопки -->
+            <g class="btn" data-key="KEY_SUBTITLE"><rect x="40" y="630" width="60" height="30" rx="6" fill="#333"/><text x="70" y="650" fill="#fff" font-size="8" text-anchor="middle">SUBTITLE</text></g>
+            <g class="btn" data-key="KEY_TEXT"><rect x="120" y="630" width="60" height="30" rx="6" fill="#333"/><text x="150" y="650" fill="#fff" font-size="8" text-anchor="middle">TEXT</text></g>
+            <g class="btn" data-key="KEY_AUDIO"><rect x="200" y="630" width="60" height="30" rx="6" fill="#333"/><text x="230" y="650" fill="#fff" font-size="8" text-anchor="middle">AUDIO</text></g>
+
+            <g class="btn" data-key="KEY_REWIND"><rect x="40" y="675" width="60" height="30" rx="6" fill="#333"/><text x="70" y="695" fill="#fff" font-size="14" text-anchor="middle">◀◀</text></g>
+            <g class="btn" data-key="KEY_PLAY"><rect x="120" y="675" width="60" height="30" rx="6" fill="#333"/><text x="150" y="695" fill="#fff" font-size="14" text-anchor="middle">▶</text></g>
+            <g class="btn" data-key="KEY_PAUSE"><rect x="200" y="675" width="60" height="30" rx="6" fill="#333"/><text x="230" y="695" fill="#fff" font-size="14" text-anchor="middle">⏸</text></g>
+
+            <g class="btn" data-key="KEY_RECORD"><circle cx="70" cy="730" r="10" fill="#d32f2f"/><text x="70" y="734" fill="#fff" font-size="10" text-anchor="middle">●</text></g>
+            <g class="btn" data-key="KEY_STOP"><rect x="120" y="720" width="60" height="20" rx="4" fill="#333"/><text x="150" y="734" fill="#fff" font-size="10" text-anchor="middle">■</text></g>
+            <g class="btn" data-key="KEY_FAV"><rect x="200" y="720" width="60" height="20" rx="4" fill="#333"/><text x="230" y="734" fill="#fff" font-size="10" text-anchor="middle">FAV</text></g>
+
+            <!-- Приложения -->
+            <g class="btn" data-key="KEY_NETFLIX"><rect x="40" y="760" width="70" height="25" rx="6" fill="#e50914"/><text x="75" y="777" fill="#fff" font-size="8" text-anchor="middle">NETFLIX</text></g>
+            <g class="btn" data-key="KEY_AMAZON"><rect x="120" y="760" width="70" height="25" rx="6" fill="#00a8e1"/><text x="155" y="777" fill="#fff" font-size="8" text-anchor="middle">prime</text></g>
+            <g class="btn" data-key="KEY_YOUTUBE"><rect x="200" y="760" width="70" height="25" rx="6" fill="#ff0000"/><text x="235" y="777" fill="#fff" font-size="8" text-anchor="middle">YouTube</text></g>
+
+            <!-- Цветные кнопки -->
+            <g class="btn" data-key="KEY_RED"><rect x="40" y="800" width="50" height="20" rx="4" fill="#d32f2f"/></g>
+            <g class="btn" data-key="KEY_GREEN"><rect x="100" y="800" width="50" height="20" rx="4" fill="#388e3c"/></g>
+            <g class="btn" data-key="KEY_YELLOW"><rect x="160" y="800" width="50" height="20" rx="4" fill="#fbc02d"/></g>
+            <g class="btn" data-key="KEY_BLUE"><rect x="220" y="800" width="50" height="20" rx="4" fill="#1976d2"/></g>
+
+        </svg>
+    </div>
+</div>
+
+<!-- Модальное окно добавления устройства -->
+<div class="modal" id="deviceModal">
+    <div class="modal-content">
+        <h2>Добавить устройство</h2>
+        <input type="text" id="ipInput" placeholder="IP-адрес (192.168.1.50)">
+        <input type="text" id="nameInput" placeholder="Название (Телевизор в гостиной)">
+        <button id="saveDeviceBtn">Сохранить устройство</button>
+        <button id="cancelBtn" class="cancel">Отмена</button>
+    </div>
 </div>
 
 <script src="script.js"></script>
